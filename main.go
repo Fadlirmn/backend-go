@@ -27,6 +27,11 @@ func main()  {
 			handler.GetUsers(w,r)
 		case http.MethodPost:
 			handler.CreateUser(w,r)
+		case http.MethodPut:
+			handler.UpdateUser(w,r)
+		case http.MethodDelete:
+			handler.DeleteUser(w,r)
+
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 	

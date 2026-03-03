@@ -20,3 +20,10 @@ func (s *UserService) GetUsers()[]model.User  {
 func (s *UserService) CreateUser(user model.User)  {
 	s.repo.Save(user)
 }
+
+func (s *UserService) UpdateUser(id string,user model.User)  error{
+	return s.repo.Update(id, user)
+}
+func (s *UserService) DeleteUser(id string) error {
+	return s.repo.Delete(id)
+}
