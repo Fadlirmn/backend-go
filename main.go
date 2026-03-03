@@ -17,20 +17,40 @@ func main()  {
 
 
 
-	repo := repository.NewUserRepository(db)
-	service:= service.NewUserService(repo)
-	handler:= handler.NewUserHandler(service)
+	usersRepo := repository.NewUserRepository(db)
+	usersService:= service.NewUserService(usersRepo)
+	usersHandler:= handler.NewUserHandler(usersService)
+
+	productsRepo := repository.NewProductRepository(db)
+	productService:= service.NewProductService(productsRepo)
+	productsHandler:= handler.NewProductHandler(productService)
 
 	http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method{
 		case http.MethodGet:
-			handler.GetUsers(w,r)
+			usersHandler.GetUsers(w,r)
 		case http.MethodPost:
-			handler.CreateUser(w,r)
+			usersHandler.CreateUser(w,r)
 		case http.MethodPut:
-			handler.UpdateUser(w,r)
+			usersHandler.UpdateUser(w,r)
 		case http.MethodDelete:
-			handler.DeleteUser(w,r)
+			usersHandler.DeleteUser(w,r)
+
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+	
+		}
+	})
+	http.HandleFunc("/products", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method{
+		case http.MethodGet:
+			productsHandler.GetProduct(w,r)
+		case http.MethodPost:
+			productsHandler.CreateProduct(w,r)
+		case http.MethodPut:
+			productsHandler.UpdateProduct(w,r)
+		case http.MethodDelete:
+			productsHandler.DeleteProduct(w,r)
 
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
