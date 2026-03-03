@@ -9,9 +9,12 @@ OS Environment: Arch Linux
 Proyek ini menggunakan pemisahan layer agar kode mudah dimaintain:
 
 backend-api-belajar/
-├── config/ # Koneksi database PostgreSQL
-├── handler/ # HTTP Request & Response (Controller)
-├── model/ # Struct data (User)
-├── repository/ # Query langsung ke database (SQL)
-├── service/ # Logika bisnis
-└── main.go # Entry point & Dependency Injection
+├── config/        # Koneksi database PostgreSQL
+├── handler/       # HTTP Request & Response (Controller)
+├── model/         # Struct data (User)
+├── repository/    # Query langsung ke database (SQL)
+├── service/       # Logika bisnis
+└── main.go        # Entry point & Dependency Injection
+
+
+
