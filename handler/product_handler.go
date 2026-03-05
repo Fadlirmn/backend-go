@@ -3,7 +3,6 @@ package handler
 import (
 	"backend-api-belajar/model"
 	"backend-api-belajar/service"
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -24,7 +23,10 @@ func (h *ProductHandler)GetProduct(c *gin.Context)  {
 }
 func (h *ProductHandler)CreateProduct(c *gin.Context)  {
 	var product model.Product
-	json.NewDecoder(c.Request.Body).Decode(&product)
+	if err:=c.ShouldBindJSON(&product); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error":"invalid JSON: " + err.Error()})
+		return 
+	}
 
 	h.service.CreateProduct(product)
 	c.JSON(http.StatusAccepted,product)
@@ -41,8 +43,8 @@ func (h *ProductHandler)UpdateProduct(c *gin.Context)  {
 	var product model.Product
 	// 2. Decode JSON (Hanya simpan hasil error-nya ke 'err')
 	// JANGAN masukkan hasil Decode ke dalam 'id'
-	err = json.NewDecoder(c.Request.Body).Decode(&product) 
-	if err != nil {
+	
+	if err:=c.ShouldBindJSON(&product); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error":"Invalid Json Body"})
 		return
 	}
