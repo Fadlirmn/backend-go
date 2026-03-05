@@ -3,8 +3,9 @@ package handler
 import (
 	"backend-api-belajar/model"
 	"backend-api-belajar/service"
-	"encoding/json"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 	
 )
 
@@ -16,52 +17,52 @@ func NewUserHandler(s *service.UserService) *UserHandler  {
 	return &UserHandler{service: s}
 }
 
-func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GetUsers(c *gin.Context) {
 	users := h.service.GetUsers()
-	json.NewEncoder(w).Encode(users)
+	c.JSON(http.StatusOK, users)
 }
-func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) CreateUser(c *gin.Context) {
 	var user model.User
-	json.NewDecoder(r.Body).Decode(&user)
+	if err := c.ShouldBindJSON(&user); err!= nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error":"invalid json: "+err.Error()})
+		return 
+	}
 
 	h.service.CreateUser(user)
-	w.WriteHeader(http.StatusCreated)
+	c.JSON(http.StatusOK, gin.H{"success":"User has been created"})
 }
 
-func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+func (h *UserHandler) UpdateUser(c *gin.Context) {
+	id := c.Query("id")
     if id == "" {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte("ID is required"))
+         c.JSON(http.StatusBadRequest, gin.H{"error":"Invalid ID"})
         return
     }
     
     // 2. Decode Body JSON dari Postman
     var user model.User
-    err := json.NewDecoder(r.Body).Decode(&user)
+    err := c.ShouldBindJSON(&user)
     if err != nil {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte("Invalid JSON body"))
+        c.JSON(http.StatusInternalServerError, gin.H{"error":"Invalid Body JSON "})
         return
     }
 
     // 3. Panggil Service
     err = h.service.UpdateUser(id, user)
     if err != nil {
-        w.WriteHeader(http.StatusInternalServerError)
-        w.Write([]byte("Failed to update user in database"))
+        c.JSON(http.StatusInternalServerError, err)
         return
     }
 }
 
-func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request)  {
-	id := r.URL.Query().Get("id")
+func (h *UserHandler) DeleteUser(c *gin.Context)  {
+	id := c.Query("id")
 	
 
 	err := h.service.DeleteUser(id)
 	if err!= nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error":"Id Not Found"})
 		return
 	}
-	w.Write([]byte("User Deleted Successfully"))
+	c.JSON(http.StatusOK, gin.H{"success":"users han been deleted"})
 }

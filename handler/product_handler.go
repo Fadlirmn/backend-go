@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type ProductHandler struct{
@@ -16,57 +18,53 @@ func NewProductHandler(s *service.ProductService)*ProductHandler  {
 	return &ProductHandler{service: s}
 }
 
-func (h *ProductHandler)GetProduct(w http.ResponseWriter, r *http.Request)  {
+func (h *ProductHandler)GetProduct(c *gin.Context)  {
 	products:= h.service.GetProduct()
-	json.NewEncoder(w).Encode(products)
+	c.JSON(http.StatusOK, products)
 }
-func (h *ProductHandler)CreateProduct(w http.ResponseWriter, r *http.Request)  {
+func (h *ProductHandler)CreateProduct(c *gin.Context)  {
 	var product model.Product
-	json.NewDecoder(r.Body).Decode(&product)
+	json.NewDecoder(c.Request.Body).Decode(&product)
 
 	h.service.CreateProduct(product)
-	w.WriteHeader(http.StatusCreated)
+	c.JSON(http.StatusAccepted,product)
 }
 
-func (h *ProductHandler)UpdateProduct(w http.ResponseWriter, r *http.Request)  {
-	StringId:= r.URL.Query().Get("id")
+func (h *ProductHandler)UpdateProduct(c *gin.Context)  {
+	StringId:= c.Query("id")
 	id, err:= strconv.Atoi(StringId)
 	if err!= nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("ID is Required"))
+		c.JSON(http.StatusBadRequest, gin.H{"error":"ID MUST NUMBER"})
 		return
 	
 	}
 	var product model.Product
 	// 2. Decode JSON (Hanya simpan hasil error-nya ke 'err')
 	// JANGAN masukkan hasil Decode ke dalam 'id'
-	err = json.NewDecoder(r.Body).Decode(&product) 
+	err = json.NewDecoder(c.Request.Body).Decode(&product) 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Invalid JSON body"))
+		c.JSON(http.StatusBadRequest, gin.H{"error":"Invalid Json Body"})
 		return
 	}
 
 	// 3. Panggil service dengan 'id' yang sudah jadi int
 	err = h.service.UpdateProduct(id, product)
 
-		w.Write([]byte("Product updated successfully"))
+		c.JSON(http.StatusOK, err)
 }
-func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
-    StringId := r.URL.Query().Get("id")
+func (h *ProductHandler) DeleteProduct(c *gin.Context) {
+    StringId := c.Query("id")
     id, err := strconv.Atoi(StringId)
     if err != nil {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte("ID is Required and must be a number"))
+        c.JSON(http.StatusBadRequest, gin.H{"error":"ID is Required and must be a number"})
         return // Cukup return saja, jangan 'return nil' atau 'return err'
     }
 
     err = h.service.DeleteProduct(id)
     if err != nil {
-        w.WriteHeader(http.StatusInternalServerError)
-        w.Write([]byte("Failed to delete product"))
+        c.JSON(http.StatusInternalServerError, gin.H{"error":"ID is Required and must be a number"})
         return 
     }
 
-    w.Write([]byte("Product Deleted Successfully"))
+     c.JSON(http.StatusOK, gin.H{"success":"Done Deleted Products"})
 }
